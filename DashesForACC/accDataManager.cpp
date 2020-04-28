@@ -1,4 +1,5 @@
 #include "accDataManager.h"
+#include <comdef.h>
 
 namespace DaFACC
 {
@@ -38,14 +39,16 @@ namespace DaFACC
 
 		if (toUpdate == AccDataSet::DASHBOARD)
 		{
-			strcpy_s(_dashData.currentTime, (char*)pfg->currentTime);
-			strcpy_s(_dashData.bestTime, (char*)pfg->bestTime);
-			strcpy_s(_dashData.split, (char*)pfg->split);
+
+			sprintf_s(_dashData.currentTime, "%ws", pfg->currentTime);
+			sprintf_s(_dashData.bestTime, "%ws", pfg->bestTime);
+			sprintf_s(_dashData.split, "%ws", pfg->split);
 			_dashData.ABSLevel = pfg->ABS;
 			_dashData.EMLevel = pfg->EngineMap;
 			_dashData.TCLevel = pfg->TC;
 			_dashData.currentPosition = pfg->position;
 			_dashData.completedLaps = pfg->completedLaps;
+			_dashData.validLaps = pfg->numberOfLaps;
 		}
 
 		UnmapViewOfFile(_graphics.mapFileBuffer);
@@ -76,6 +79,7 @@ namespace DaFACC
 			_dashData.currentGear = pfp->gear;
 			_dashData.currentRPM = pfp->rpms;
 			_dashData.currentKPH = pfp->speedKmh;
+			_dashData.currentFuel = pfp->fuel;
 		}
 
 		UnmapViewOfFile(_physics.mapFileBuffer);

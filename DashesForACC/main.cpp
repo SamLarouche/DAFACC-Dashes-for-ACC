@@ -1,5 +1,7 @@
 #include <iostream>
+#include <iomanip>
 #include <stdio.h>
+#include <sstream>
 #include <string>
 
 #include <GL/gl3w.h>
@@ -11,7 +13,7 @@
 
 #include "accDataManager.h"
 
-void drawWindowInnerBorder(ImVec2 windowPos, ImVec2 windowSize, int extraPaddingX = 0, int extraPaddingY = 0)
+void drawWindowInnerBorder(const ImVec2& windowPos, const ImVec2& windowSize, int extraPaddingX = 0, int extraPaddingY = 0)
 {
     int paddingX = 7;
     int paddingY = 9;
@@ -20,31 +22,45 @@ void drawWindowInnerBorder(ImVec2 windowPos, ImVec2 windowSize, int extraPadding
     ImGui::GetWindowDrawList()->AddRect(borderRectStart, borderRectEnd, ImColor(235, 235, 235), 0, 0, 5.0f);
 }
 
+void drawCenteredText(const ImVec2& windowPos, const ImVec2& windowSize, const ImColor& color, const char* text, size_t textLength = 1)
+{
+    ImVec2 textSize = ImGui::CalcTextSize(text, text + textLength);
+    const ImVec2 textPos = ImVec2((windowPos.x + windowSize.x / 2.0) - textSize.x / 2.0, (windowPos.y + windowSize.y / 2.0) - textSize.y / 2.0);
+
+    ImGui::GetWindowDrawList()->AddText(textPos, color, text, text + textLength);
+}
+
 void displayRPM(ImGuiWindowFlags flags, int currentRPM, int maxRPM)
 {
     ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(760, 100), ImGuiCond_Once);
     ImGui::Begin("RPM", NULL, flags);
 
-    // Todo: compute number of lines from max RPM instead of a static 8000 max rpm for all cars
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 0, 50), ImVec2(40 + 90 * 0 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 1, 50), ImVec2(40 + 90 * 1 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 2, 50), ImVec2(40 + 90 * 2 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 3, 50), ImVec2(40 + 90 * 3 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 4, 50), ImVec2(40 + 90 * 4 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 5, 50), ImVec2(40 + 90 * 5 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 6, 50), ImVec2(40 + 90 * 6 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 7, 50), ImVec2(40 + 90 * 7 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 8, 50), ImVec2(40 + 90 * 8 + 2, 50 + 50), ImColor(235, 235, 235), 0);
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 0, 30), ImColor(235, 235, 235), "0");
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 1, 30), ImColor(235, 235, 235), "1");
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 2, 30), ImColor(235, 235, 235), "2");
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 3, 30), ImColor(235, 235, 235), "3");
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 4, 30), ImColor(235, 235, 235), "4");
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 5, 30), ImColor(235, 235, 235), "5");
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 6, 30), ImColor(235, 235, 235), "6");
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 7, 30), ImColor(235, 235, 235), "7");
-    ImGui::GetWindowDrawList()->AddText(ImVec2(38 + 90 * 8, 30), ImColor(235, 235, 235), "8");
+    // Todo: compute number of lines (and fill) from max RPM instead of a static 8000 max rpm for all cars
+
+    float fillX = currentRPM * (90 * 8) / 8000.0f;
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 0, 50), ImVec2(fillX + 40, 50 + 50), ImColor(25, 169, 229, 255), 0);
+
+    
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 0 - 2, 50), ImVec2(40 + 90 * 0 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 1 - 2, 50), ImVec2(40 + 90 * 1 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 2 - 2, 50), ImVec2(40 + 90 * 2 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 3 - 2, 50), ImVec2(40 + 90 * 3 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 4 - 2, 50), ImVec2(40 + 90 * 4 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 5 - 2, 50), ImVec2(40 + 90 * 5 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 6 - 2, 50), ImVec2(40 + 90 * 6 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 7 - 2, 50), ImVec2(40 + 90 * 7 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(40 + 90 * 8 - 2, 50), ImVec2(40 + 90 * 8 + 2, 50 + 50), ImColor(235, 235, 235), 0);
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 0, 30), ImColor(235, 235, 235), "0");
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 1, 30), ImColor(235, 235, 235), "1");
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 2, 30), ImColor(235, 235, 235), "2");
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 3, 30), ImColor(235, 235, 235), "3");
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 4, 30), ImColor(235, 235, 235), "4");
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 5, 30), ImColor(235, 235, 235), "5");
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 6, 30), ImColor(235, 235, 235), "6");
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 7, 30), ImColor(235, 235, 235), "7");
+    ImGui::GetWindowDrawList()->AddText(ImVec2(38 - 2 + 90 * 8, 30), ImColor(235, 235, 235), "8");
+
     ImGui::End();
 }
 
@@ -60,7 +76,7 @@ void displayPositionStats(ImGuiWindowFlags flags, int currentPosition, int compl
     ImGui::End();
 }
 
-void displaySplit(ImGuiWindowFlags flags, const char* split)
+void displaySplit(ImGuiWindowFlags flags, const char* split, int nbValidLaps)
 {
     const ImVec2 windowPos  = ImVec2(300, 120);
     const ImVec2 windowSize = ImVec2(200, 100);
@@ -68,7 +84,20 @@ void displaySplit(ImGuiWindowFlags flags, const char* split)
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
     ImGui::Begin("Split", NULL, flags);
+
+    ImGui::SetWindowFontScale(3);
     drawWindowInnerBorder(windowPos, windowSize);
+
+    if (nbValidLaps > 0)
+    {
+        drawCenteredText(windowPos, windowSize, ImColor(235, 235, 235), split, strlen(split));
+    }
+    else
+    {
+        char voidTime[] = "0.0";
+        drawCenteredText(windowPos, windowSize, ImColor(235, 235, 235), voidTime, strlen(voidTime));
+    }
+
     ImGui::End();
 }
 
@@ -80,11 +109,18 @@ void displayCurrentSpeed(ImGuiWindowFlags flags, float currentKPH)
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
     ImGui::Begin("Speed", NULL, flags);
+
+    ImGui::SetWindowFontScale(3);
     drawWindowInnerBorder(windowPos, windowSize);
+
+    std::ostringstream speed;
+    speed << std::fixed << std::setprecision(1) << currentKPH;
+    drawCenteredText(windowPos, windowSize, ImColor(235, 235, 235), speed.str().c_str(), strlen(speed.str().c_str()));
+
     ImGui::End();
 }
 
-void displayCurrentLapTime(ImGuiWindowFlags flags)
+void displayCurrentLapTime(ImGuiWindowFlags flags, const char* laptime)
 {
     const ImVec2 windowPos = ImVec2(20, 220);
     const ImVec2 windowSize = ImVec2(280, 100);
@@ -92,11 +128,15 @@ void displayCurrentLapTime(ImGuiWindowFlags flags)
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
     ImGui::Begin("Current Time", NULL, flags);
+
+    ImGui::SetWindowFontScale(3);
     drawWindowInnerBorder(windowPos, windowSize);
+    drawCenteredText(windowPos, windowSize, ImColor(235, 235, 235), laptime, strlen(laptime));
+
     ImGui::End();
 }
 
-void displayBestLapTime(ImGuiWindowFlags flags)
+void displayBestLapTime(ImGuiWindowFlags flags, const char* laptime, int nbValidLaps)
 {
     const ImVec2 windowPos = ImVec2(20, 320);
     const ImVec2 windowSize = ImVec2(280, 100);
@@ -104,11 +144,23 @@ void displayBestLapTime(ImGuiWindowFlags flags)
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
     ImGui::Begin("Best Time", NULL, flags);
+
+    ImGui::SetWindowFontScale(3);
     drawWindowInnerBorder(windowPos, windowSize);
+
+    if (nbValidLaps > 0) 
+    {
+        drawCenteredText(windowPos, windowSize, ImColor(235, 235, 235), laptime, strlen(laptime));
+    }
+    else
+    {
+        char voidTime[] = "0.0";
+        drawCenteredText(windowPos, windowSize, ImColor(235, 235, 235), voidTime, strlen(voidTime));
+    }
     ImGui::End();
 }
 
-void displayCurrentGear(ImGuiWindowFlags flags)
+void displayCurrentGear(ImGuiWindowFlags flags, int gear)
 {
     const ImVec2 windowPos = ImVec2(300, 220);
     const ImVec2 windowSize = ImVec2(200, 200);
@@ -116,11 +168,44 @@ void displayCurrentGear(ImGuiWindowFlags flags)
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
     ImGui::Begin("Gear", NULL, flags);
-    drawWindowInnerBorder(windowPos, windowSize, 10);
+
+    char gearChar = 'R';
+    switch (gear) 
+    {
+        case 1:
+            gearChar = 'N';
+            break;
+        case 2:
+            gearChar = '1';
+            break;
+        case 3:
+            gearChar = '2';
+            break;
+        case 4:
+            gearChar = '3';
+            break;
+        case 5:
+            gearChar = '4';
+            break;
+        case 6:
+            gearChar = '5';
+            break;
+        case 7:
+            gearChar = '6';
+            break;
+        case 8:
+            gearChar = '7';
+            break;
+    }
+
+    ImGui::SetWindowFontScale(7);
+    drawWindowInnerBorder(windowPos, windowSize);
+    drawCenteredText(windowPos, windowSize, ImColor(235, 235, 235), &gearChar);
+
     ImGui::End();
 }
 
-void displayCarControls(ImGuiWindowFlags flags)
+void displayCarControls(ImGuiWindowFlags flags, int ABS, int TC, int EM)
 {
     const ImVec2 windowPos = ImVec2(500, 220);
     const ImVec2 windowSize = ImVec2(280, 100);
@@ -128,11 +213,13 @@ void displayCarControls(ImGuiWindowFlags flags)
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
     ImGui::Begin("Car Control", NULL, flags);
+
     drawWindowInnerBorder(windowPos, windowSize);
+
     ImGui::End();
 }
 
-void displayFuel(ImGuiWindowFlags flags)
+void displayFuel(ImGuiWindowFlags flags, float currentFuel, float maxFuel)
 {
     const ImVec2 windowPos = ImVec2(500, 320);
     const ImVec2 windowSize = ImVec2(280, 100);
@@ -140,7 +227,19 @@ void displayFuel(ImGuiWindowFlags flags)
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
     ImGui::Begin("Fuel", NULL, flags);
+    float currentFuelPercent = 0.0f;
+    if (maxFuel > 0.0f)
+    {
+        currentFuelPercent = (currentFuel * maxFuel) / 100.0f;
+    }
+
+    std::ostringstream fuel;
+    fuel << std::fixed << std::setprecision(1) << currentFuelPercent << "%";
+
+    ImGui::SetWindowFontScale(3);
+    drawCenteredText(windowPos, windowSize, ImColor(235, 235, 235), fuel.str().c_str(), strlen(fuel.str().c_str()));
     drawWindowInnerBorder(windowPos, windowSize);
+
     ImGui::End();
 }
 
@@ -215,6 +314,7 @@ int main(int, char**)
         flags |= ImGuiWindowFlags_NoResize;
         flags |= ImGuiWindowFlags_NoCollapse;
         flags |= ImGuiWindowFlags_NoTitleBar;
+        flags |= ImGuiWindowFlags_NoBackground;
 
         ImGuiStyle& style = ImGui::GetStyle();
         style.WindowRounding = 0.0f;
@@ -225,13 +325,13 @@ int main(int, char**)
 
         displayRPM(flags, dashData.currentRPM, dashData.maxRPM);
         displayPositionStats(flags, 1, 12);
-        displaySplit(flags, dashData.split);
+        displaySplit(flags, dashData.split, dashData.validLaps);
         displayCurrentSpeed(flags, dashData.currentKPH);
-        displayCurrentLapTime(flags);
-        displayBestLapTime(flags);
-        displayCurrentGear(flags);
-        displayCarControls(flags);
-        displayFuel(flags);
+        displayCurrentLapTime(flags, dashData.currentTime);
+        displayBestLapTime(flags, dashData.bestTime, dashData.validLaps);
+        displayCurrentGear(flags, dashData.currentGear);
+        displayCarControls(flags, dashData.ABSLevel, dashData.TCLevel, dashData.EMLevel);
+        displayFuel(flags, dashData.currentFuel, dashData.maxFuel);
 
         /*        
         ImGui::Begin("All");

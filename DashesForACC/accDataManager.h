@@ -20,7 +20,8 @@ namespace DaFACC
 		// realtime dash data (from physics pagefile)
 		int   currentGear = 0;
 		int   currentRPM = 0;
-		float currentKPH = 0;
+		float currentKPH = 0.0;
+		float currentFuel = 0.0;
 
 		// realtime dash data (from graphics pagefile)
 		char  currentTime[15] = "0.0";
@@ -31,11 +32,12 @@ namespace DaFACC
 		int   TCLevel = 0;
 		int   currentPosition = 0;
 		int   completedLaps = 0;
+		int   validLaps = 0;
 
 		// needed car specs (from statics pagefile)
 		char  carModel[33] = "";
-		int   maxRPM;
-		float maxFuel;
+		int   maxRPM = 8000;
+		float maxFuel = 0;
 	};
 
 	/**
